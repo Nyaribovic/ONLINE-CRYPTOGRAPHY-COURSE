@@ -25,6 +25,6 @@ The aim of  this project is to identify individuals most likely to click on an o
  
 * README: This README.
 
-#How To Use It
+# How To Use It
 
 All code is in the  Notebook . Please assure that all dependencies which are mentioned in the section Packages have been installed. There is a requirements.txt file in the Repository which contains all relevant dependencies.Further, the business questions as well as their answers are contained in the  markdown cells.
