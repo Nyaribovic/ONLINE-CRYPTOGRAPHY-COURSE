@@ -1,0 +1,480 @@
+---
+title: "ONLINE CRYPTOGRAPHY COURSE"
+author: "VICTOR NYARIBO"
+date: "5/19/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## a) Data Analytic Question
+
+The aim of  this project is to identify individuals most likely to click on an online cryptography course advert.
+
+## b) Success Metrics
+
+* Successful Loading the data.
+* Successful Handling missing data.
+* Successful Outliers detection.
+* Successful Outlier Visualization.
+* Successful Handling  outliers.
+* Successful Univariate analysis.
+* Successful Bivariate analysis.
+
+
+
+## c) Context
+
+Internet has become the most prominent and accessible way to spread the news about an event or to pitch,
+advertise and sell a product, globally. The success of any advertisement campaign lies in reaching the right
+class of target audience and eventually convert them as potential customers in the future. Businesses are predominantly charged based the number of clicks that they received for their advertisement while some websites also bill them with a fixed charge per billing cycle. This creates a necessity for the advertising firms to analyze and study these influential factors to achieve the maximum possible gain through the advertisements.
+Additionally, it is equally important for the businesses to customize these factors rightly to achieve the
+maximum clicks.
+
+## d) Data Understanding
+Variables
+
+* Daily Time Spent on a Site: Time spent by the user on a site in minutes.
+* Age:Customer's age in terms of years.
+* Area Income: Average income of geographical area of consumer.
+* Daily Internet Usage: Average minutes in a day consumer is on the internet.
+* Ad Topic Line: Headline of the advertisement.
+* City: City of the consumer.
+* Male: Whether or not a consumer was male.
+* Country: Country of the consumer.
+* Timestamp: Time at which user clicked on an Ad or the closed window.
+* Clicked on Ad: 0 or 1 is indicated clicking on an Ad.
+
+## e) Experimental Design
+
+* Formulation of the research question.
+* Loading the data.
+* Exploratory Data Analysis.
+* Solution Implementation.
+* Challenging the solution.
+* Follow up .
+
+
+```{r cleaning,include=FALSE}
+
+###############cleaning r ENVIROMENT#####################################################3
+
+ls()  # TO see the objects you have created.
+rm(list=ls()) #First delete all the objects using rm(list=ls())
+gc()    #Then clear any occupied memory by running garbage collector using gc().
+#############################################################################
+library(AggregateR)
+library(broom)
+library(data.table)
+library(date,anytime)
+library(deSolve)
+library(distcrete)
+library(dplyr)
+library(DT)
+library(earlyR)
+library(EpiEstim)
+library(epitrix)
+library(ff)
+library(ggforce)
+library(ggplot2)
+library(ggthemes)
+library(gridExtra)
+library(gt)
+library(Hmisc)
+library(hrbrthemes)
+library(incidence)
+library(knitr)
+library(lubridate)
+library(magrittr)
+library(projections)
+library(readr)
+library(rvest)
+library(scales)
+library(stringr)
+library(tibble)
+library(tidyverse)
+library(writexl)
+library(xtable)
+library(class)
+library(caTools)
+library(psych)
+library(ISOcodes)
+library(caret)
+library(countrycode)
+library(mlbench)
+library(e1071)
+options( java.parameters = "-Xmx4g")
+options(digits = 15)
+
+
+```
+## Data Importation
+```{r  data, include=TRUE}
+
+advertising<-df <- read.csv("http://bit.ly/IPAdvertisingData",header =T)
+
+
+```
+
+## converting data.frame data into data.table
+
+```{r  converting, include=TRUE}
+
+advertising<-as.data.table(advertising)
+class(advertising) #checking class
+
+```
+
+
+## Data Columns
+```{r  preview, include=TRUE}
+#advertising%>%head(2)
+kable(colnames(advertising))
+
+```
+
+## Delete unneccessary columns
+```{r  Delete, include=TRUE,echo = FALSE}
+
+advertising=advertising[, c("Ad.Topic.Line","Timestamp"):=NULL]
+
+kable(colnames(advertising))
+
+
+```
+
+## Check for missing values
+
+```{r  missing, include=TRUE}
+library(Amelia)
+missmap(advertising,main="Missing Values in Data Set")
+
+```
+
+
+
+## Tibbles
+
+
+A tibble is a special kind of data.frame used by dplyr and other packages of the tidyverse. Tidyverse is a set of packages for data science that work in harmony because they share common data representations and API design. When a data.frame is turned into a tibble its class will change.
+
+```{r  Tibbles, include=TRUE}
+
+class(advertising)
+
+advertising <- tbl_df(advertising)
+
+class(advertising)
+
+
+```
+
+
+## Data Overview
+
+```{r  Glimpse, include=TRUE,echo = FALSE}
+glimpse(advertising)
+
+```
+
+
+
+## Data preview
+```{r  head, include=TRUE,echo = FALSE}
+
+advertising%>% head()
+
+```
+
+
+# Univariate analysis of a continuous variables
+```{r  Univariate, include=TRUE,echo = FALSE}
+
+advertising%>%
+    ggplot(aes(Daily.Internet.Usage)) +
+    geom_histogram(color = "green",fill = "orange") +
+    geom_vline(xintercept = mean(advertising$Daily.Internet.Usage), lwd = 2) +
+    labs(title = "Distribution of Daily.Internet.Usage",
+         x = "Internet.Usage",
+         y = "Frequency") +
+    theme_minimal() 
+    
+
+```
+```{r  Time.on.site, include=TRUE,echo = FALSE}
+
+advertising%>%
+    ggplot(aes(Daily.Time.Spent.on.Site)) +
+    geom_histogram(color = "green",fill = "deeppink") +
+    geom_vline(xintercept = mean(advertising$Daily.Time.Spent.on.Site), lwd = 2) +
+    labs(title = "Distribution of Daily.Time.Spent.on.Site",
+         x = "Daily.Time.Spent.on.Site",
+         y = "Frequency") +
+    theme_minimal() 
+    
+
+```
+
+```{r age, include=TRUE,echo = FALSE}
+
+advertising%>%
+    ggplot(aes(Age)) +
+    geom_histogram(color = "green",fill = "dodgerblue") +
+    geom_vline(xintercept = mean(advertising$Age), lwd = 2) +
+    labs(title = "Distribution of Age",
+         x = "Age",
+         y = "Frequency") +
+    theme_minimal() 
+    
+
+```
+
+```{r Area, include=TRUE,echo = FALSE}
+
+advertising%>%
+    ggplot(aes(Area.Income)) +
+    geom_histogram(color = "green",fill = "blue4") +
+    geom_vline(xintercept = mean(advertising$Area.Income), lwd = 2) +
+    labs(title = "Distribution of Area.Income",
+         x = "Area.Income",
+         y = "Frequency") +
+    theme_minimal() 
+    
+
+```
+
+# Bivariate analysis of a continuous variable with respect to a categorical variable
+
+
+
+```{r maleon.Site, include=TRUE,echo = FALSE}
+advertising %>%
+    ggplot(aes(Daily.Time.Spent.on.Site)) +
+    geom_histogram( color = "chocolate",fill = "darkgreen") +
+    labs(title = "Distribution of Gender relative to Time.Spent.on.Site",
+         x = "Time.Spent.on.Site ",
+         y = "Frequency") +
+    theme_minimal() +
+        facet_grid(Male~.)
+
+```
+
+
+```{r age.male, include=TRUE,echo = FALSE}
+advertising %>%
+    ggplot(aes(Age)) +
+    geom_histogram( color = "chocolate",fill = "firebrick") +
+    labs(title = "Distribution of Gender relative to Age",
+         x = "Age ",
+         y = "Frequency") +
+    theme_minimal() +
+        facet_grid(Male~.)
+
+```
+
+
+
+```{r income.male, include=TRUE,echo = FALSE}
+advertising %>%
+    ggplot(aes(Area.Income)) +
+    geom_histogram( color = "chocolate",fill = "#ffc844") +
+    labs(title = "Distribution of Gender relative to Area Income",
+         x = "Area.Income ",
+         y = "Frequency") +
+    theme_minimal() +
+        facet_grid(Male~.)
+
+```
+
+
+
+# Bivariate analysis of a continuous variable with respect to another continuous variable
+
+
+
+```{r area.internet, include=TRUE,echo = FALSE}
+advertising %>%
+    ggplot(aes(Daily.Internet.Usage, Area.Income)) +
+    geom_point() +
+    theme_minimal() +
+    labs(title = "Relationship between Area.Income and Daily.Internet.Usage") +
+    geom_smooth(method = "lm", se = F)
+```
+
+
+```{r time.internet, include=TRUE,echo = FALSE}
+advertising %>%
+    ggplot(aes(Daily.Time.Spent.on.Site,Daily.Internet.Usage)) +
+    geom_point() +
+    theme_minimal() +
+    labs(title = "Relationship between Daily.Time.Spent.on.Site and Daily.Internet.Usage") +
+    geom_smooth(method = "lm", se = F)
+```
+
+
+# Correlation Matrix for the advertising dataset
+```{r corr, include=TRUE,echo = FALSE}
+library(ggcorrplot)
+corrdata=advertising[,c("Daily.Time.Spent.on.Site", "Age","Area.Income","Daily.Internet.Usage")]  
+
+corrdata%>%
+    select_if(is.numeric) %>%
+    cor %>% 
+    ggcorrplot(type = "lower", ggtheme = theme_minimal, colors = c("#6D9EC1","white","#E46726"),
+               show.diag = T,
+               lab = T, lab_size = 5,
+               title = "Correlation Matrix for the advertising dataset",
+               legend.title = "Correlation Value",
+               outline.color = "white",
+               hc.order = T)
+```
+
+#     ADVERTISMENT CLICK PREDICTION
+
+
+
+```{r prediction, include=TRUE,echo = FALSE}
+
+advertising$City<- factor(advertising$City)
+advertising$Country<-factor(advertising$Country)
+
+#To verify and test our model’s performance, we first need to split our data into training and test sets. This #is where the caret package comes in, its createDataPartition() function is extremely useful for splitting data #into separate sets. Here, we split 60% of the data for training using our new factorized variable and the #remaining 40% for testing.
+
+
+inTrain <- createDataPartition(y = advertising$Clicked.on.Ad, p = .80, list = FALSE)
+training <- advertising[inTrain,]
+testing <- advertising[-inTrain,]
+#You can check how many observations are stored in the training and test sets by calling the dim() function.
+dim(training)
+dim(testing)
+
+
+model <- glm( Clicked.on.Ad ~ Daily.Time.Spent.on.Site+ Age+ Area.Income + Daily.Internet.Usage, data = training, family = binomial)
+summary(model)$coef
+
+#The logistic function gives an s-shaped probability curve illustrated as follows:
+
+training%>%
+  mutate(prob = ifelse(Clicked.on.Ad == "pos", 1, 0)) %>%
+  ggplot(aes(Age, prob)) +
+  geom_point(alpha = 0.2) +
+  geom_smooth(method = "glm", method.args = list(family = "binomial")) +
+  labs(
+    title = "Logistic Regression Model", 
+    x = "Daily.Internet.Usage",
+    y = "Probability of Clicking on an Adertisment"
+    )
+
+
+
+
+
+
+```
+
+
+
+
+
+
+## Feature importance and Logistic Regression
+```{r Feature, echo=FALSE}
+
+## custom theme as the default, and also update the default for line size.
+theme_custom <- function(base_size, ...){
+  ggplot2::theme_gray(base_size = base_size, ...) +
+    ggplot2::theme(
+      plot.title = element_text(face = 'bold',hjust = 0.3 ),
+      plot.subtitle = element_text(hjust = 0.5,color = '#333333'),
+      panel.background = element_rect(fill = "#EBF4F7"),
+      strip.background = element_rect(fill = "#33AACC"),
+      axis.text.x=element_text(angle=60,hjust=1),
+      axis.line = element_line(colour = "darkblue",size = 0.1, linetype = "solid")
+    )
+}
+ggplot2::theme_set(theme_custom(base_size = 10))
+ggplot2::update_geom_defaults("line", list(size = 0.9))
+theme( axis.line = element_line(colour = "darkblue",size = 0.5, linetype = "solid"))
+#############################################################################################
+
+advertising_data <- read.csv("http://bit.ly/IPAdvertisingData",header =T)
+
+advertising_data <- advertising_data[rowSums(is.na(advertising_data)) == 0, ]
+advertising_data$continent <- countrycode(advertising_data$Country,
+                                    origin = "country.name",
+                                    destination = "continent")
+advertising_data$continent <- factor(advertising_data$continent, 
+                               levels = c("Africa", "Antarctica", "Asia", "Europe", "Americas", "Australia"), 
+                               labels = c(1, 2, 3, 4, 5, 6))
+# To encode countries, uncomment line below
+# advertising_data$Country <- countrycode(advertising_data$Country, "country.name", "iso3n")
+advertising_data <- advertising_data[rowSums(is.na(advertising_data)) == 0, ]
+advertising_data <- advertising_data[ , -which(names(advertising_data) %in% c("Country"))]
+
+advertising_data <- advertising_data[ , -which(names(advertising_data) %in% c("Timestamp"))]
+advertising_data <- advertising_data[ , -which(names(advertising_data) %in% c("City"))]
+advertising_data <- advertising_data[ , -which(names(advertising_data) %in% c("Ad.Topic.Line"))]
+# advertising_data$Clicked.on.Ad = factor(relevantData$Class, levels=c('Bad', 'Good'), labels = c(0, 1))
+targetVarColNum = as.numeric(which( colnames(advertising_data)=='Clicked.on.Ad' ))
+set.seed(42)
+
+split = sample.split(advertising_data$Clicked.on.Ad, 0.75)
+training_set = subset(advertising_data, split= TRUE)
+test_set = subset(advertising_data, split = FALSE)
+classifier = glm(formula = Clicked.on.Ad ~ ., family = binomial, data=training_set)
+prob_predict = predict(classifier, type = 'response', advertising_data1 = test_set[-targetVarColNum])
+Class_predict = ifelse(prob_predict > 0.5, 1, 0)
+CovMatrix = table(test_set[, targetVarColNum], Class_predict)
+
+results_matrix = data.matrix(CovMatrix)
+LR_true_zero = as.numeric(results_matrix[1, 1])
+LR_false_zero = as.numeric(results_matrix[1, 2])
+LR_true_one = as.numeric(results_matrix[2, 2])
+LR_false_one = as.numeric(results_matrix[2, 1])
+LR_accuracy = (LR_true_one + LR_true_zero)/(LR_true_one + LR_true_zero + LR_false_one + LR_false_zero)
+
+print("Logistic Regression Confusion/Clarity Matrix)")
+#kable(CovMatrix)
+CovMatrix
+print(paste("Logistic Regression Accuracy: ", toString(LR_accuracy*100) ))
+
+
+
+## GLM Variable Importance:
+
+importance <- varImp(classifier, scale=FALSE)
+
+importance$varnames <- rownames(importance)
+importance$var_categ <- "Location"
+
+kable(importance,caption = "Variable Importance:")
+
+library(ggplot2) 
+importance[which(rownames(importance) %in% c("continent4")), 2] <- "Europe"
+importance[which(rownames(importance) %in% c("continent3")), 2] <- "Asia"
+importance[which(rownames(importance) %in% c("continent5")), 2] <- "America"
+importance[which(rownames(importance) %in% c("continent6")), 2] <- "Australia"
+importance[which(rownames(importance) %in% c("Daily.Time.Spent.on.Site")), 2] <- "Daily.Time.on.Site"
+importance[which(rownames(importance) %in% c("Daily.Internet.Usage")), 2] <- "Daily.Internet.Usage"
+importance[which(rownames(importance) %in% c("Area.Income")), 2] <- "Area.Income"
+importance[which(rownames(importance) %in% c("Male")), 2] <- "Gender"
+
+
+importance[which(rownames(importance) %in% c("Daily.Time.Spent.on.Site")), 3] <- "Site/Internet Usage"
+importance[which(rownames(importance) %in% c("Daily.Internet.Usage")), 3] <- "Site/Internet Usage"
+
+importance[which(rownames(importance) %in% c("Area.Income")), 3] <- "Demographics"
+importance[which(rownames(importance) %in% c("Male")), 3] <- "Demographics"
+importance[which(rownames(importance) %in% c("Age")), 3] <- "Demographics"
+
+
+ggplot(importance, aes(x=reorder(varnames, Overall), weight=Overall, fill=as.factor(var_categ))) + 
+  geom_bar() +
+  scale_fill_discrete(name="Variables Grouped") +
+  ylab("Overall Variable Importance") +
+  xlab("Variable")
+  
+
+```
